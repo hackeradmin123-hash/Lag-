@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ULTRA Lag Machine X</title>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+    }
+
+    body {
+        transition: transform 0.1s linear, filter 0.1s linear;
+        perspective: 1000px;
+        background: linear-gradient(135deg, #0f172a, #111827, #1e293b);
+        overflow: auto;
+        color: white;
+        height: 100vh;
+    }
+
+    .ui {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.2);
+        backdrop-filter: blur(10px);
+        padding: 20px;
+        border-radius: 20px;
+        width: 320px;
+        z-index: 10;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+
+    h1 {
+        font-size: 28px;
+        margin-bottom: 10px;
+    }
+
+    p {
+        opacity: 0.8;
+        margin-bottom: 15px;
+    }
+
+    button {
+        width: 100%;
+        padding: 14px;
+        border: none;
+        border-radius: 14px;
+        margin-top: 10px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: 0.2s;
+        background: linear-gradient(135deg,#3b82f6,#9333ea);
+        color: white;
+        font-weight: bold;
+    }
+
+    button:hover {
+        transform: scale(1.03);
+    }
+
+    .stats {
+        margin-top: 15px;
+        line-height: 1.8;
+        font-size: 14px;
+        opacity: 0.9;
+    }
+
+    #playground {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+    }
+
+    .box {
+        position: absolute;
+        border-radius: 10px;
+        animation: spin 2s linear infinite;
+        box-shadow: 0 0 20px rgba(255,255,255,0.3);
+    }
+
+    @keyframes spin {
+        from {
+            transform: rotate(0deg) scale(1);
+        }
+        50% {
+            transform: rotate(180deg) scale(1.3);
+        }
+        to {
+            transform: rotate(360deg) scale(1);
+        }
+    }
+</style>
+</head>
+<body>
+
+<div class="ui">
+    <h1>🔥 ULTRA Lag Machine X</h1>
+    <p>Extreme browser stress simulator with particles, shaders, screen shake, GPU effects, rainbow chaos, and infinite object spam.</p>
+
+    <button onclick="spawnBoxes(100)">Spawn 100</button>
+    <button onclick="spawnBoxes(500)">Spawn 500</button>
+    <button onclick="spawnBoxes(1000)">Spawn 1000</button>
+    <button onclick="crazyMode()">MAX CHAOS</button>
+    <button onclick="blackHoleMode()">BLACK HOLE MODE</button>
+    <button onclick="matrixMode()">MATRIX MODE</button>
+    <button onclick="explosionMode()">EXPLOSION MODE</button>
+    <button onclick="quantumMode()">QUANTUM OVERDRIVE</button>
+    <button onclick="desktopDestroyer()">DESKTOP DESTROYER</button>
+    <button onclick="warpSpeed()">WARP SPEED</button>
+    <button onclick="clearBoxes()">Clear</button>
+
+    <div class="stats">
+        <div>Objects: <span id="count">0</span></div>
+        <div>FPS Mode: Nuclear</div>
+        <div>CPU Load: <span id="cpu">0%</span></div>
+        <div>GPU: <span id="gpu">Detecting...</span></div>
+        <div>Status: <span id="status">Idle</span></div>
+    </div>
+</div>
+
+<div id="playground"></div>
+
+<script>
+const playground = document.getElementById('playground');
+const countText = document.getElementById('count');
+const statusText = document.getElementById('status');
+const cpuEl = document.getElementById('cpu');
+const gpuEl = document.getElementById('gpu');
+
+let total = 0;
+let interval = null;
+
+function rand(a,b){return Math.random()*(b-a)+a;}
+
+// GPU
+function getGPU(){
+  try{
+    const c=document.createElement('canvas');
+    const gl=c.getContext('webgl')||c.getContext('experimental-webgl');
+    if(!gl) return 'No WebGL';
+    const ext=gl.getExtension('WEBGL_debug_renderer_info');
+    return ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : 'WebGL GPU';
+  }catch(e){return 'Unknown GPU';}
+}
+if(gpuEl) gpuEl.textContent=getGPU();
+
+// CPU fake load
+let prev=performance.now();
+function cpuLoop(){
+  const now=performance.now();
+  const diff=now-prev;
+  prev=now;
+  const load=Math.max(0,Math.min(100,(16.7/diff)*100));
+  if(cpuEl) cpuEl.textContent=load.toFixed(0)+'%';
+  requestAnimationFrame(cpuLoop);
+}
+cpuLoop();
+
+function updateCount(){
+  if(countText) countText.textContent=total;
+}
+
+function makeBox(){
+  const d=document.createElement('div');
+  d.className='box';
+  d.style.position='absolute';
+  d.style.width=rand(10,60)+'px';
+  d.style.height=rand(10,60)+'px';
+  d.style.left=rand(0,innerWidth)+'px';
+  d.style.top=rand(0,innerHeight)+'px';
+  d.style.background=`hsl(${Math.random()*360},100%,60%)`;
+  playground.appendChild(d);
+  total++; updateCount();
+
+  function anim(){
+    d.style.transform=`rotate(${Date.now()/10}deg) scale(${1+Math.sin(Date.now()/200)*0.4})`;
+    requestAnimationFrame(anim);
+  }
+  anim();
+}
+
+function spawnBoxes(n){
+  statusText.textContent='SPAWNING';
+  for(let i=0;i<n;i++) makeBox();
+}
+
+function clearBoxes(){
+  playground.innerHTML='';
+  total=0;
+  updateCount();
+  statusText.textContent='CLEARED';
+  if(interval) clearInterval(interval);
+}
+
+function crazyMode(){
+  statusText.textContent='CRAZY MODE';
+  clearInterval(interval);
+  interval=setInterval(()=>spawnBoxes(80),200);
+}
+
+function explosionMode(){
+  statusText.textContent='EXPLOSION';
+  for(let b=0;b<10;b++){
+    setTimeout(()=>spawnBoxes(200),b*150);
+  }
+}
+
+function blackHoleMode(){
+  statusText.textContent='BLACK HOLE';
+  clearInterval(interval);
+  interval=setInterval(()=>spawnBoxes(120),120);
+}
+
+function matrixMode(){
+  statusText.textContent='MATRIX';
+  clearInterval(interval);
+  interval=setInterval(()=>spawnBoxes(50),80);
+}
+
+function quantumMode(){
+  statusText.textContent='QUANTUM';
+  clearInterval(interval);
+  interval=setInterval(()=>spawnBoxes(150),100);
+}
+
+function desktopDestroyer(){
+  statusText.textContent='DESKTOP DESTROYER';
+  clearInterval(interval);
+  interval=setInterval(()=>{
+    document.body.style.transform=`translate(${rand(-20,20)}px,${rand(-20,20)}px)`;
+    spawnBoxes(100);
+  },120);
+}
+
+function warpSpeed(){
+  statusText.textContent='WARP SPEED';
+  clearInterval(interval);
+  interval=setInterval(()=>spawnBoxes(200),60);
+}
+
+window.addEventListener('mousemove',e=>{
+  for(let i=0;i<2;i++){
+    const t=document.createElement('div');
+    t.className='box';
+    t.style.position='absolute';
+    t.style.left=e.clientX+'px';
+    t.style.top=e.clientY+'px';
+    t.style.width='8px';
+    t.style.height='8px';
+    t.style.background='white';
+    playground.appendChild(t);
+    setTimeout(()=>t.remove(),800);
+  }
+});
+</script>
+
+</body>
+</html>
